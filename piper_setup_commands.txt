@@ -1,0 +1,55 @@
+
+# Commandes pour la configuration, l'entraînement et l'exportation du projet Piper TTS
+
+# 1. Installation des dépendances système
+sudo apt-get update
+sudo apt-get install -y python3-dev espeak-ng
+
+# 2. Configuration de l'environnement virtuel
+cd /content/piper
+python3 -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip wheel setuptools
+pip install pytorch-lightning==1.7.7 torchmetrics==0.11.4 numpy==1.26.4
+pip install -e .
+
+# 3. Compilation de monotonic_align
+bash build_monotonic_align.sh
+
+# 4. Prétraitement du dataset
+python3 -m piper_train.preprocess   --language en-us   --input-dir /content/dataset_dir   --output-dir /content/training_dir   --dataset-format ljspeech   --single-speaker   --sample-rate 22050
+
+# 5. Entraînement du modèle
+python3 -m piper_train   --dataset-dir /content/training_dir   --accelerator gpu   --devices 1   --batch-size 32   --validation-split 0.0   --num-test-examples 0   --max_epochs 1000   --resume_from_checkpoint /content/drive/MyDrive/PiperTraining/checkpoints/checkpoints/epoch=2195-step=1452116.ckpt   --checkpoint-epochs 1   --precision 32
+
+# 6. Test pendant l'entraînement
+echo "This is a test." > /content/test_sentences.txt
+lib/piper_phonemize -l en-us --espeak-data /usr/lib/x86_64-linux-gnu/espeak-ng-data/ < /content/test_sentences.txt > /content/test_phonemes.jsonl
+cat /content/test_phonemes.jsonl | python3 -m piper_train.infer   --sample-rate 22050   --checkpoint /content/training_dir/lightning_logs/version_0/checkpoints/*.ckpt   --output-dir /content/output
+
+# 7. Exportation en ONNX
+pip install onnx-simplifier
+python3 -m piper_train.export_onnx   /content/training_dir/lightning_logs/version_0/checkpoints/epoch=2195-step=1452116.ckpt   /content/model_2195.onnx
+python3 -m onnxsim   /content/model_2195.onnx   /content/model_2195_simplified.onnx
+cp /content/training_dir/config.json /content/model_2195_simplified.onnx.json
+
+# 8. Test du modèle ONNX
+echo "This is a test." | piper --model /content/model_2195_simplified.onnx --output_file /content/test_onnx.wav
+
+# 9. Création de l'image Docker
+mkdir -p /content/docker_piper
+cat << DOCKERFILE > /content/docker_piper/Dockerfile
+FROM python:3.10-slim
+RUN apt-get update && apt-get install -y espeak-ng && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+COPY model_2195_simplified.onnx .
+COPY model_2195_simplified.onnx.json .
+RUN pip install piper-phonemize==1.1.0 onnxruntime==1.22.1
+COPY piper /app/piper
+WORKDIR /app/piper
+RUN pip install .
+WORKDIR /app
+ENTRYPOINT ["piper", "--model", "model_2195_simplified.onnx", "--output_file", "output.wav"]
+DOCKERFILE
+
+tar -czf /content/drive/MyDrive/PiperTraining/backup/docker_piper.tar.gz -C /content/docker_piper .
