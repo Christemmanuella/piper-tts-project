@@ -41,4 +41,4 @@ Ce référentiel contient un modèle de synthèse vocale (TTS) basé sur l’arc
 
 
 ## Licence
-[À spécifier, par exemple, MIT]. Consultez le fichier `LICENSE`.
+MIT
