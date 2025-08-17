@@ -1,2 +1,19 @@
-# piper-tts-project
-Projet de synthèse vocale Piper avec un modèle ONNX entraîné à partir d’un dataset audio, prêt pour déploiement via Docker
+# Piper TTS Project - Emmanuella
+
+This repository contains a Piper text-to-speech (TTS) model trained on a custom audio dataset. The model was fine-tuned, exported to ONNX format, and tested to generate WAV files. A Docker setup is included for deployment.
+
+## Files
+- `model_2195.onnx`: Trained ONNX model (63.5 MB).
+- `model_2195.onnx.json`: Model configuration (7 KB).
+- `config.json`: Training configuration.
+- `dataset.jsonl`: Preprocessed training dataset.
+- `test_onnx.wav`: Sample output WAV (78 KB).
+- `piper_setup_commands.txt`: Commands used for setup, training, and export.
+- `piper_project_report.md`: Project report.
+- `docker_piper.tar.gz`: Docker archive (2 GB, available on Google Drive: [INSÈRE LIEN GOOGLE DRIVE ICI]).
+
+## Setup Instructions
+See `piper_setup_commands.txt` for detailed setup and deployment instructions.
+
+## License
+MIT License
