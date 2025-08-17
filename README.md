@@ -10,7 +10,7 @@ This repository contains a Piper text-to-speech (TTS) model trained on a custom 
 - `test_onnx.wav`: Sample output WAV (78 KB).
 - `piper_setup_commands.txt`: Commands used for setup, training, and export.
 - `piper_project_report.md`: Project report.
-- `docker_piper.tar.gz`: Docker archive (2 GB, available on Google Drive: [INSÈRE LIEN GOOGLE DRIVE ICI]).
+- `docker_piper.tar.gz`: Docker archive (2 GB, available on Google Drive: https://drive.google.com/file/d/1J8MghFESQgD3dFPfKh9O9NFVoO3wGWb6/view?usp=sharing).
 
 ## Setup Instructions
 See `piper_setup_commands.txt` for detailed setup and deployment instructions.
